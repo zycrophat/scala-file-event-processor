@@ -27,6 +27,8 @@ val generateFunctionAppFiles = taskKey[File]("Generated Azure Function App files
 generateFunctionAppFiles := {
   import org.fusesource.scalate._
   import Path.rebase
+  import scala.sys.process.Process
+  import sbt.Keys.streams
 
   val sourceDir = baseDirectory.value / "scala-function-app"
   val targetDir = baseDirectory.value / "target" / "scala-function-app-generated"
@@ -55,6 +57,8 @@ generateFunctionAppFiles := {
         IO.copyFile(src, dest)
       }
     }
+    
+  Process("dotnet" :: "build" :: "-o" :: "bin" :: Nil, targetDir) ! streams.value.log  
 
   targetDir
 }

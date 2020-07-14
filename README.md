@@ -6,6 +6,7 @@ todo
 ## Prerequisites
 
 - Tested on JDK 11 (but should work on JDK 8)
+- .NET Core SDK 3.1 
  
 ## How to run tests
 
