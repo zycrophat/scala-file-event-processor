@@ -21,11 +21,11 @@ assemblyMergeStrategy in assembly := {
 }
 
 
-val generateFunctionAppFiles = taskKey[File]("A sample string task.")
+val generateFunctionAppFiles = taskKey[File]("Generated Azure Function App files")
 
-import org.fusesource.scalate._
 
 generateFunctionAppFiles := {
+  import org.fusesource.scalate._
   import Path.rebase
 
   val sourceDir = baseDirectory.value / "scala-function-app"
