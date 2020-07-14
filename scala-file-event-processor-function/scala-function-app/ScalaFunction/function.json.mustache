@@ -1,0 +1,15 @@
+{
+  "scriptFile": "{{appjar}}",
+  "entryPoint": "zycrophat.fileeventprocessor.MyFunction.run",
+  "bindings": [
+    {
+      "type": "blobTrigger",
+      "name": "myblob",
+      "path": "blobs/{name}",
+      "connection": "storageConn",
+      "direction": "in"
+    }
+  ]
+}
+
+
