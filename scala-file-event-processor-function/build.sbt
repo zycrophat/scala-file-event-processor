@@ -8,9 +8,8 @@ enablePlugins(UniversalPlugin)
 
 libraryDependencies += Deps.scalaTest
 libraryDependencies += Deps.azureFunctions
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Runtime
-libraryDependencies += "com.azure" % "azure-storage-blob" % "12.7.0"
+libraryDependencies ++= Deps.logging
+libraryDependencies += Deps.azureStorage
 
 assemblyMergeStrategy in assembly := {
   case PathList(x @ _*) if x.head.startsWith("META-INF") => MergeStrategy.discard
