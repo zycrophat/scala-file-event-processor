@@ -12,6 +12,6 @@ class MyFunction extends LazyLogging {
            context: ExecutionContext): Unit = {
 
     context.getLogger.info("Scala trigger processed a request.")
-    logger.info(s"Foobar4711: $fileName")
+    logger.info(s"Foobar42: $fileName")
   }
 }
