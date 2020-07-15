@@ -30,7 +30,7 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Agent.BuildDirectory)/scala-file-event-processor-function/target/universal'
+    SourceFolder: 'scala-file-event-processor-function/target/universal'
     Contents: '*.zip'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     FlattenFolders: true
