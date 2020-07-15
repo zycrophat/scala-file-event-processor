@@ -22,43 +22,44 @@ assemblyMergeStrategy in assembly := {
 
 
 val generateFunctionAppFiles = taskKey[File]("Generated Azure Function App files")
-
+generateFunctionAppFiles / fileInputs += baseDirectory.value.toGlob / "scala-function-app" / "**.*"
 
 generateFunctionAppFiles := {
   import org.fusesource.scalate._
   import Path.rebase
   import scala.sys.process.Process
   import sbt.Keys.streams
-
   val sourceDir = baseDirectory.value / "scala-function-app"
   val targetDir = baseDirectory.value / "target" / "scala-function-app-generated"
-  val engine = new TemplateEngine
   val fatJar = (assembly in Compile).value
-  val fatJarTarget = targetDir / fatJar.getName
-  IO.copyFile(fatJar, fatJarTarget)
-  val templateVariables = Map("appjar" -> s"../${fatJarTarget.getName}")
+  val log = streams.value.log
+  if (generateFunctionAppFiles.inputFileChanges.hasChanges) {
+    val engine = new TemplateEngine
+    val fatJarTarget = targetDir / fatJar.getName
+    IO.copyFile(fatJar, fatJarTarget)
+    val templateVariables = Map("appjar" -> s"../${fatJarTarget.getName}")
 
-  (((sourceDir ** "*") filter { !_.isDirectory }).get() pair rebase(sourceDir, targetDir))
-    .map { case (src, dest) =>
-      if (dest.ext == "mustache") {
-        (src, file(dest.getParent) / dest.base)
-      } else {
-        (src, dest)
+    (((sourceDir ** "*") filter { !_.isDirectory }).get() pair rebase(sourceDir, targetDir))
+      .map { case (src, dest) =>
+        if (dest.ext == "mustache") {
+          (src, file(dest.getParent) / dest.base)
+        } else {
+          (src, dest)
+        }
       }
-    }
-    .foreach { case(src, dest) =>
-      if (src.ext == "mustache") {
-        dest.getParentFile.mkdirs()
-        val pw = new PrintWriter(dest)
-        engine.layout(src.toString, pw, templateVariables)
-        pw.close()
+      .foreach { case(src, dest) =>
+        if (src.ext == "mustache") {
+          dest.getParentFile.mkdirs()
+          val pw = new PrintWriter(dest)
+          engine.layout(src.toString, pw, templateVariables)
+          pw.close()
+        } else {
+          IO.copyFile(src, dest)
+        }
+      }
 
-      } else {
-        IO.copyFile(src, dest)
-      }
-    }
-    
-  Process("dotnet" :: "build" :: "-o" :: "bin" :: Nil, targetDir) ! streams.value.log  
+    Process("dotnet" :: "build" :: "-o" :: "bin" :: Nil, targetDir) ! log
+  }
 
   targetDir
 }
