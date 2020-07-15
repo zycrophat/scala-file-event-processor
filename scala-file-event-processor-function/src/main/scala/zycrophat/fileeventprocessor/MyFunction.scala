@@ -13,6 +13,11 @@ import scala.util.Try
 
 
 class MyFunction extends LazyLogging {
+
+  {
+    logger.info(s"MyFunction instantiated. $BuildInfo")
+  }
+
   private implicit val fileMetadataCodec: JsonValueCodec[FileMetadata] = JsonCodecMaker.make
 
   private object CosmosDb {

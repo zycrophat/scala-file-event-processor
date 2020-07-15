@@ -5,6 +5,9 @@ import NativePackagerHelper._
 name := "scala-file-event-processor-function"
 
 enablePlugins(UniversalPlugin)
+enablePlugins(BuildInfoPlugin)
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
+buildInfoPackage := "zycrophat.fileeventprocessor"
 
 libraryDependencies += Deps.scalaTest
 libraryDependencies += Deps.azureFunctions
