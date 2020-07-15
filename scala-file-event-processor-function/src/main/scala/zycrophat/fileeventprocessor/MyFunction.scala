@@ -2,6 +2,7 @@ package zycrophat.fileeventprocessor
 
 import java.time.LocalDateTime
 
+import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.{CosmosAsyncClient, CosmosClientBuilder}
 import com.microsoft.azure.functions.ExecutionContext
 import com.microsoft.azure.functions.annotation.{BindingName, BlobTrigger, FunctionName}
@@ -9,7 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 class MyFunction extends LazyLogging {
@@ -41,6 +42,13 @@ class MyFunction extends LazyLogging {
     val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
     val upsert = container.upsertItem(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now())))
 
-    logger.info(s"upsert statuscode: ${Try(upsert.block().getStatusCode).getOrElse("unknown")}")
+    upsert
+      .doOnError { t =>
+        logger.error(s"CosmosDB upsert failed", t)
+      }
+      .subscribe { r: CosmosItemResponse[String] =>
+        logger.info(s"CosmosDB update succeeded. Status code: ${r.getStatusCode}")
+      }
+
   }
 }
