@@ -31,7 +31,7 @@ class MyFunction extends LazyLogging {
 
     context.getLogger.info("Scala trigger processed a request.")
     logger.info(s"CosmosDb: ${CosmosDb.dbClient == null}")
-    logger.info(s"Foobar1337: $fileName")
+    logger.info(s"Foobar1338: $fileName")
 
     val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
     val upsert = container.upsertItem(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now())))
