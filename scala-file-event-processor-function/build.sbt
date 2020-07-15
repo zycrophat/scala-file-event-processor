@@ -11,8 +11,13 @@ libraryDependencies += Deps.azureFunctions
 libraryDependencies ++= Deps.logging
 libraryDependencies += Deps.azureStorage
 libraryDependencies += "com.azure" % "azure-cosmos" % "4.1.0"
-libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.9"
-libraryDependencies += "org.json4s" %% "json4s-ext" % "3.6.9"
+//libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.9"
+//libraryDependencies += "org.json4s" %% "json4s-ext" % "3.6.9"
+
+libraryDependencies ++= Seq(
+  "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % "2.5.0",
+  "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.5.0" % Provided // or "provided", but it is required only in compile-time
+)
 
 assemblyMergeStrategy in assembly := {
   case PathList(x @ _*) if x.head.startsWith("META-INF") => MergeStrategy.discard

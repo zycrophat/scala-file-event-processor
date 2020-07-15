@@ -6,14 +6,14 @@ import com.azure.cosmos.{CosmosAsyncClient, CosmosClientBuilder}
 import com.microsoft.azure.functions.ExecutionContext
 import com.microsoft.azure.functions.annotation.{BindingName, BlobTrigger, FunctionName}
 import com.typesafe.scalalogging.LazyLogging
-import org.json4s._
-import org.json4s.ext.JavaTimeSerializers
-import org.json4s.native.Serialization.{read, write}
+import com.github.plokhotnyuk.jsoniter_scala.core._
+import com.github.plokhotnyuk.jsoniter_scala.macros._
 
+import scala.util.Try
 
 
 class MyFunction extends LazyLogging {
-  private implicit val formats: Formats = DefaultFormats ++ JavaTimeSerializers.all
+  private implicit val fileMetadataCodec: JsonValueCodec[FileMetadata] = JsonCodecMaker.make
 
   private object CosmosDb {
     private val dbConn = System.getenv("DB_CONN_ENDPOINT")
@@ -34,8 +34,8 @@ class MyFunction extends LazyLogging {
     logger.info(s"Foobar1337: $fileName")
 
     val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
-    val upsert = container.upsertItem(write(FileMetadata(name = fileName, timestamp = LocalDateTime.now())))
+    val upsert = container.upsertItem(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now())))
 
-    logger.info(s"upsert statuscode: ${upsert.block().getStatusCode}")
+    logger.info(s"upsert statuscode: ${Try(upsert.block().getStatusCode).getOrElse("unknown")}")
   }
 }
