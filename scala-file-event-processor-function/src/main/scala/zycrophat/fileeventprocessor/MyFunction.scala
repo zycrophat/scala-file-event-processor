@@ -1,9 +1,11 @@
 package zycrophat.fileeventprocessor
 
+import java.security.MessageDigest
 import java.time.LocalDateTime
 
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.{CosmosAsyncClient, CosmosClient, CosmosClientBuilder}
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.azure.functions.ExecutionContext
 import com.microsoft.azure.functions.annotation.{BindingName, BlobTrigger, FunctionName}
 import com.typesafe.scalalogging.LazyLogging
@@ -20,7 +22,7 @@ class MyFunction extends LazyLogging {
   }
 
   private implicit val fileMetadataCodec: JsonValueCodec[FileMetadata] = JsonCodecMaker.make
-
+  private val mapper = new ObjectMapper
   private object CosmosDb {
     private val dbConn = System.getenv("DB_CONN_ENDPOINT")
     val dbClient: CosmosClient = new CosmosClientBuilder()
@@ -42,9 +44,10 @@ class MyFunction extends LazyLogging {
     val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
 
     try {
-      import com.fasterxml.jackson.databind.ObjectMapper
-      val mapper = new ObjectMapper
-      val r = container.upsertItem(mapper.readTree(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now()))))
+      val id = MessageDigest.getInstance("SHA-256")
+        .digest(fileName.getBytes("UTF-8"))
+        .map("%02x".format(_)).mkString
+      val r = container.upsertItem(mapper.readTree(writeToString(FileMetadata(id = id, name = fileName, timestamp = LocalDateTime.now()))))
       logger.info(s"CosmosDB update succeeded. Status code: ${r.getStatusCode}")
     } catch {
       case t: Throwable => logger.error(s"CosmosDB upsert failed", t)

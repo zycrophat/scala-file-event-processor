@@ -12,8 +12,8 @@ class MyFunctionTest extends AnyFlatSpec with Matchers  {
 
   "Json" must "be produced" in {
     val fileMetadata =
-      FileMetadata(name = "blabla", LocalDate.of(2020, 7, 15).atTime(13, 37, 23, 223322332))
+      FileMetadata(id = "12345", name = "blabla", LocalDate.of(2020, 7, 15).atTime(13, 37, 23, 223322332))
 
-      writeToString(fileMetadata) shouldBe """{"name":"blabla","timestamp":"2020-07-15T13:37:23.223322332"}"""
+      writeToString(fileMetadata) shouldBe """{"id":"12345","name":"blabla","timestamp":"2020-07-15T13:37:23.223322332"}"""
   }
 }
