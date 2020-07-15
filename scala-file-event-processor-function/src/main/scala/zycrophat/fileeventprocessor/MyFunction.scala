@@ -42,7 +42,9 @@ class MyFunction extends LazyLogging {
     val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
 
     try {
-      val r = container.upsertItem(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now())))
+      import com.fasterxml.jackson.databind.ObjectMapper
+      val mapper = new ObjectMapper
+      val r = container.upsertItem(mapper.readTree(writeToString(FileMetadata(name = fileName, timestamp = LocalDateTime.now()))))
       logger.info(s"CosmosDB update succeeded. Status code: ${r.getStatusCode}")
     } catch {
       case t: Throwable => logger.error(s"CosmosDB upsert failed", t)
