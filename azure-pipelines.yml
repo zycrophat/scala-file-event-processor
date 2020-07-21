@@ -2,41 +2,53 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
+variables:
+  - name: publishToMaven
+    value: false
 
 trigger:
   batch: true
   branches:
     include:
-    - master
+      - master
   tags:
     include:
-    - v*
+      - v*
 
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- script: |
-    sbt universal:packageBin
-  displayName: 'Build deployment zip'
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildDeploymentZipPackage
+        steps:
+          - script: |
+              sbt universal:packageBin
+            displayName: 'Build deployment zip'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: 'scala-file-event-processor-function/target/universal'
-    Contents: '*.zip'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    FlattenFolders: true
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: 'scala-file-event-processor-function/target/universal'
+              Contents: '*.zip'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+              FlattenFolders: true
 
-- task: MavenAuthenticate@0
-  inputs:
-    artifactsFeeds: 'scalafeed'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'FunctionApp deployment zip'
+              publishLocation: 'Container'
 
-- script: |
-    sbt publish
-  displayName: 'publish to Maven'   
+  - stage: Publish
+    condition: and(succeeded(), eq(variables['publishToMaven'], true))
+    jobs:
+      - job: PublishMavenArtifact
+        steps:
+          - task: MavenAuthenticate@0
+            inputs:
+              artifactsFeeds: 'scalafeed'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'FunctionApp deployment zip'
-    publishLocation: 'Container'
+          - script: |
+              sbt aetherDeploy
+            displayName: 'publish to Maven'
