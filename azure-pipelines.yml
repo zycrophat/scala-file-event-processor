@@ -27,6 +27,14 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     FlattenFolders: true
 
+- task: MavenAuthenticate@0
+  inputs:
+    artifactsFeeds: 'scalafeed'
+
+- script: |
+    sbt publish
+  displayName: 'publish to Maven'   
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
