@@ -9,12 +9,11 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{JsonValueCodec, _}
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import com.microsoft.azure.functions.ExecutionContext
 import com.microsoft.azure.functions.annotation.{BindingName, BlobTrigger, FunctionName}
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.{Failure, Success, Try}
 
 
-class MyFunction extends LazyLogging {
+class MyFunction extends LazyLoggingTakingImplicitExecutionContext {
 
   {
     logger.info(s"MyFunction instantiated. $BuildInfo")
@@ -32,11 +31,10 @@ class MyFunction extends LazyLogging {
 
   @FunctionName("ScalaFunction")
   def run(@BlobTrigger(connection = "storageConn", dataType = "", name = "myblob", path = "blobs/{name}") myblob: String,
-          @BindingName("name") fileName: String,
-           context: ExecutionContext): Unit = {
+          @BindingName("name") fileName: String)(implicit context: ExecutionContext): Unit = {
     context.getLogger.info("Scala trigger processed a request.")
-    logger.info(s"CosmosDb: ${CosmosDb.dbClient.isDefined}")
-    logger.info(s"Foobar1339: $fileName")
+    executionLogger.info(s"CosmosDb: ${CosmosDb.dbClient.isDefined}")
+    executionLogger.info(s"Foobar1339: $fileName")
 
     CosmosDb.dbClient.map { dbClient =>
       val container = dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
@@ -49,10 +47,10 @@ class MyFunction extends LazyLogging {
       }
     } match {
       case Some(upsertTry) => upsertTry match {
-        case Failure(exception) => logger.error(s"CosmosDB upsert failed", exception)
-        case Success(r) => logger.info(s"CosmosDB upsert complete. Status code: ${r.getStatusCode}")
+        case Failure(exception) => executionLogger.error(s"CosmosDB upsert failed", exception, context)
+        case Success(r) => executionLogger.info(s"CosmosDB upsert complete. Status code: ${r.getStatusCode}", context)
       }
-      case None => logger.error(s"CosmosDB upsert could not be tried. dbClient may be uninitialized")
+      case None => executionLogger.error(s"CosmosDB upsert could not be tried. dbClient may be uninitialized", context)
     }
 
   }
@@ -61,3 +59,5 @@ class MyFunction extends LazyLogging {
     mapper.readTree(writeToString(value))
 
 }
+
+
