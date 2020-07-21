@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 variables:
   - name: publishToMaven
-    value: true
+    value: ${{ true }}
 
 trigger:
   batch: true
@@ -45,7 +45,7 @@ stages:
               publishLocation: 'Container'
 
   - stage: Publish
-    condition: and(succeeded(), eq($(publishToMaven), true))
+    condition: and(succeeded(), eq(variables.publishToMaven, true))
     jobs:
       - job: PublishMavenArtifact
         steps:
