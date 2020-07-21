@@ -47,10 +47,10 @@ class MyFunction extends LazyLoggingTakingImplicitExecutionContext {
       }
     } match {
       case Some(upsertTry) => upsertTry match {
-        case Failure(exception) => executionLogger.error(s"CosmosDB upsert failed", exception, context)
-        case Success(r) => executionLogger.info(s"CosmosDB upsert complete. Status code: ${r.getStatusCode}", context)
+        case Failure(exception) => executionLogger.error(s"CosmosDB upsert failed", exception)
+        case Success(r) => executionLogger.info(s"CosmosDB upsert complete. Status code: ${r.getStatusCode}")
       }
-      case None => executionLogger.error(s"CosmosDB upsert could not be tried. dbClient may be uninitialized", context)
+      case None => executionLogger.error(s"CosmosDB upsert could not be tried. dbClient may be uninitialized")
     }
 
   }
