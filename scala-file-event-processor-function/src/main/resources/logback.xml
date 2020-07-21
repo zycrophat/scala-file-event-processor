@@ -12,7 +12,9 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <logger name="zycrophat.fileeventprocessor" level="INFO"/>
+
+    <root level="WARN">
         <appender-ref ref="aiAppender" />
     </root>
 </configuration>
