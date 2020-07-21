@@ -1,34 +1,42 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   batch: true
   branches:
     include:
-    - master
+      - master
   tags:
     include:
-    - v*
+      - v*
 
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- script: |
-    sbt universal:packageBin
-  displayName: 'Build deployment zip'
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndPublish
+        steps:
+          - script: |
+              sbt universal:packageBin
+            displayName: 'Build deployment zip'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: 'scala-file-event-processor-function/target/universal'
-    Contents: '*.zip'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    FlattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copy deployment zip to ArtifactStagingDirectory'
+            inputs:
+              SourceFolder: 'scala-file-event-processor-function/target/universal'
+              Contents: '*.zip'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+              FlattenFolders: true
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'FunctionApp deployment zip'
-    publishLocation: 'Container'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish deployment zip'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'FunctionApp deployment zip'
+              publishLocation: 'Container'
+
+          - script: |
+              sbt aetherDeploy
+            condition: and(succeeded(), eq(variables.publishToMaven, true))
+            displayName: 'Publish to Maven'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
