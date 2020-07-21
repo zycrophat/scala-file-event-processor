@@ -14,14 +14,14 @@ package object fileeventprocessor {
     override def logMessage(originalMsg: String, a: ExecutionContext): String = {
       Option(a).foreach { ctx =>
         MDC.put("invocationId", ctx.getInvocationId)
-        MDC.put("functionName", ctx.getFunctionName)
+        MDC.put("FunctionName", ctx.getFunctionName)
       }
       originalMsg
     }
 
     override def afterLog(a: ExecutionContext): Unit = {
-      MDC.remove("invocationId")
-      MDC.remove("functionName")
+      MDC.remove("InvocationId")
+      MDC.remove("FunctionName")
     }
   }
 
