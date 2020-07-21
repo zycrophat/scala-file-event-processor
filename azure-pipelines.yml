@@ -24,8 +24,9 @@ stages:
       - job: BuildDeploymentZipPackage
         steps:
           - task: MavenAuthenticate@0
-              inputs:
-                artifactsFeeds: 'scalafeed'
+            inputs:
+              artifactsFeeds: 'scalafeed'
+
           - script: |
               sbt universal:packageBin
             displayName: 'Build deployment zip'
