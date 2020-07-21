@@ -49,6 +49,10 @@ stages:
     jobs:
       - job: PublishMavenArtifact
         steps:
+          - task: MavenAuthenticate@0
+            inputs:
+              artifactsFeeds: 'scalafeed'
+
           - script: |
               sbt aetherDeploy
             displayName: 'publish to Maven'
