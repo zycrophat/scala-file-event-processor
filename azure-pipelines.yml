@@ -45,7 +45,7 @@ stages:
               publishLocation: 'Container'
 
   - stage: Publish
-    condition: and(succeeded(), eq(variables['publishToMaven'], true))
+    condition: and(succeeded(), eq($(publishToMaven), true))
     jobs:
       - job: PublishMavenArtifact
         steps:
