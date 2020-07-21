@@ -5,11 +5,11 @@ import java.time.LocalDateTime
 
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.{CosmosAsyncClient, CosmosClient, CosmosClientBuilder}
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.microsoft.azure.functions.ExecutionContext
 import com.microsoft.azure.functions.annotation.{BindingName, BlobTrigger, FunctionName}
 import com.typesafe.scalalogging.LazyLogging
-import com.github.plokhotnyuk.jsoniter_scala.core._
+import com.github.plokhotnyuk.jsoniter_scala.core.{JsonValueCodec, _}
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 
 import scala.util.{Failure, Success, Try}
@@ -25,10 +25,10 @@ class MyFunction extends LazyLogging {
   private val mapper = new ObjectMapper
   private object CosmosDb {
     private val dbConn = System.getenv("DB_CONN_ENDPOINT")
-    val dbClient: CosmosClient = new CosmosClientBuilder()
+    val dbClient: Option[CosmosClient] = Option(new CosmosClientBuilder()
       .endpoint(dbConn)
       .key(System.getenv("DB_CONN_KEY"))
-      .buildClient()
+      .buildClient())
   }
 
   @FunctionName("ScalaFunction")
@@ -36,22 +36,30 @@ class MyFunction extends LazyLogging {
           @BindingName("name") fileName: String,
            context: ExecutionContext): Unit = {
 
-
     context.getLogger.info("Scala trigger processed a request.")
-    logger.info(s"CosmosDb: ${CosmosDb.dbClient == null}")
-    logger.info(s"Foobar1338: $fileName")
+    logger.info(s"CosmosDb: ${CosmosDb.dbClient.isDefined}")
+    logger.info(s"Foobar1339: $fileName")
 
-    val container = CosmosDb.dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
+    CosmosDb.dbClient.map { dbClient =>
+      val container = dbClient.getDatabase("blobfunctionsdb").getContainer("blobfunctionsContainer1")
 
-    try {
-      val id = MessageDigest.getInstance("SHA-256")
-        .digest(fileName.getBytes("UTF-8"))
-        .map("%02x".format(_)).mkString
-      val r = container.upsertItem(mapper.readTree(writeToString(FileMetadata(id = id, name = fileName, timestamp = LocalDateTime.now()))))
-      logger.info(s"CosmosDB update succeeded. Status code: ${r.getStatusCode}")
-    } catch {
-      case t: Throwable => logger.error(s"CosmosDB upsert failed", t)
+      Try {
+        val id = MessageDigest.getInstance("SHA-256")
+          .digest(fileName.getBytes("UTF-8"))
+          .map("%02x".format(_)).mkString
+        container.upsertItem(writeToJsonNode(FileMetadata(id, fileName, LocalDateTime.now())))
+      }
+    } match {
+      case Some(upsertTry) => upsertTry match {
+        case Failure(exception) => logger.error(s"CosmosDB upsert failed", exception)
+        case Success(r) => logger.info(s"CosmosDB upsert complete. Status code: ${r.getStatusCode}")
+      }
+      case None => logger.error(s"CosmosDB upsert could not be tried. dbClient may be uninitialized")
     }
 
   }
+
+  private def writeToJsonNode[X](value: X)(implicit codec: JsonValueCodec[X]) =
+    mapper.readTree(writeToString(value))
+
 }
