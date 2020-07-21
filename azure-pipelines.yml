@@ -44,10 +44,8 @@ stages:
               ArtifactName: 'FunctionApp deployment zip'
               publishLocation: 'Container'
 
-  - stage: Publish
-    condition: and(succeeded(), eq(variables.publishToMaven, true))
-    jobs:
       - job: PublishMavenArtifact
+        condition: and(succeeded(), eq(variables.publishToMaven, true))
         steps:
           - bash: echo This script could use $SYSTEM_ACCESSTOKEN
             env:
@@ -62,3 +60,5 @@ stages:
           - script: |
               sbt aetherDeploy
             displayName: 'publish to Maven'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)

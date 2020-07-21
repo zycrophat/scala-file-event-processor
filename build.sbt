@@ -16,7 +16,7 @@ def readCredentialsFromMavenSettings() = {
   ) yield Credentials("", "pkgs.dev.azure.com", username, password)
 }
 
-ThisBuild / credentials ++= readCredentialsFromMavenSettings()
+ThisBuild / credentials += Credentials("", "pkgs.dev.azure.com", "scalafeed", sys.env.getOrElse("SYSTEM_ACCESSTOKEN", ""))
 
 lazy val commonSettings =
   (scalaVersion := "2.13.3") ::
