@@ -1,8 +1,9 @@
 package zycrophat.fileeventprocessor
 
+
 import java.security.MessageDigest
 import java.time.LocalDateTime
-import java.util.logging.{Level, LogManager}
+import java.util.logging.{Level, Logger}
 
 import com.azure.cosmos.{CosmosClient, CosmosClientBuilder}
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -17,7 +18,7 @@ import scala.util.{Failure, Success, Try}
 class MyFunction {
 
   {
-    LogManager.getLogManager.getLogger(getClass.getName).info(s"MyFunction instantiated. $BuildInfo")
+    Logger.getLogger(getClass.getName) .info(s"MyFunction instantiated. $BuildInfo")
   }
 
   private implicit val fileMetadataCodec: JsonValueCodec[FileMetadata] = JsonCodecMaker.make
