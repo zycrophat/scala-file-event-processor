@@ -16,7 +16,9 @@ package object fileeventprocessor {
         MDC.put("InvocationId", ctx.getInvocationId)
         MDC.put("FunctionName", ctx.getFunctionName)
         ctx.getTraceContext.getAttributes.forEach { MDC.put(_,_) }
-        MDC.put("Parent Id", ctx.getTraceContext.getTraceparent)
+        val operationIdAndParent = ctx.getTraceContext.getTraceparent.split('-')
+        MDC.put("OperationId", operationIdAndParent(1))
+        MDC.put("Parent Id", operationIdAndParent(2))
       }
       originalMsg
     }
@@ -25,6 +27,7 @@ package object fileeventprocessor {
       MDC.remove("InvocationId")
       MDC.remove("FunctionName")
       a.getTraceContext.getAttributes.forEach { (k, _) => MDC.remove(k) }
+      MDC.remove("OperationId")
       MDC.remove("Parent Id")
     }
   }
