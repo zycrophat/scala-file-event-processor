@@ -3,7 +3,7 @@ package zycrophat.fileeventprocessor
 
 import java.security.MessageDigest
 import java.time.LocalDateTime
-import java.util.logging.{Level, Logger}
+import java.util.logging.{Level, LogManager, Logger}
 
 import com.azure.cosmos.{CosmosClient, CosmosClientBuilder}
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -37,6 +37,14 @@ class MyFunction {
     context.getLogger.info("Scala trigger processing a request.")
     val attributesText = context.getTraceContext.getAttributes.asScala map { case(k, v) => s"$k: $v" } reduce { (x, y) => s"$x, $y"}
     context.getLogger.info(s"InvocationId: ${context.getInvocationId}, FunctionName: ${context.getFunctionName}, Traceparent: ${context.getTraceContext.getTraceparent}, Tracestate: ${context.getTraceContext.getTracestate}, attributes: $attributesText")
+
+    val myLogger = Logger.getAnonymousLogger
+    val innerLogger = Logger.getLogger(getClass.getName)
+    innerLogger.setParent(context.getLogger)
+    innerLogger.setUseParentHandlers(true)
+    myLogger.setParent(innerLogger)
+    myLogger.setUseParentHandlers(true)
+    myLogger.info(s"InvocationId: ${context.getInvocationId}, FunctionName: ${context.getFunctionName}, Traceparent: ${context.getTraceContext.getTraceparent}, Tracestate: ${context.getTraceContext.getTracestate}, attributes: $attributesText")
 
     context.getLogger.info(s"CosmosDb: ${CosmosDb.dbClient.isDefined}")
     context.getLogger.info(s"Foobar1339: $fileName")
