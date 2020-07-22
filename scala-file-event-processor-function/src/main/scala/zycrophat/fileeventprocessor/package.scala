@@ -13,8 +13,10 @@ package object fileeventprocessor {
   implicit case object CanLogExecutionContext extends CanLog[ExecutionContext] {
     override def logMessage(originalMsg: String, a: ExecutionContext): String = {
       Option(a).foreach { ctx =>
-        MDC.put("invocationId", ctx.getInvocationId)
+        MDC.put("InvocationId", ctx.getInvocationId)
         MDC.put("FunctionName", ctx.getFunctionName)
+        ctx.getTraceContext.getAttributes.forEach { MDC.put(_,_) }
+        MDC.put("Parent Id", ctx.getTraceContext.getTraceparent)
       }
       originalMsg
     }
@@ -22,6 +24,8 @@ package object fileeventprocessor {
     override def afterLog(a: ExecutionContext): Unit = {
       MDC.remove("InvocationId")
       MDC.remove("FunctionName")
+      a.getTraceContext.getAttributes.forEach { (k, _) => MDC.remove(k) }
+      MDC.remove("Parent Id")
     }
   }
 
