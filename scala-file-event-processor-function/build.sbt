@@ -11,7 +11,7 @@ buildInfoPackage := "zycrophat.fileeventprocessor"
 
 libraryDependencies += Deps.scalaTest
 libraryDependencies += Deps.azureFunctions
-libraryDependencies ++= Deps.logging
+//libraryDependencies ++= Deps.logging
 libraryDependencies += Deps.azureStorage
 libraryDependencies += "com.azure" % "azure-cosmos" % "4.1.0"
 //libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.9"
